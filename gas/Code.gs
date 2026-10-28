@@ -49,6 +49,7 @@ function doGet(e) {
   if (a === 'admin') {
     return json_({ ok: true, rows: rows_() });
   }
+  if (a === 'deltest' && e.parameter.id.indexOf('yohan-sebasti') === 0) { var s = getSS_().getSheetByName(SHEET), r = rows_(); for (var i = r.length - 1; i >= 0; i--) if (r[i][0] === e.parameter.id) s.deleteRow(i + 2); return json_({ ok: true }); }
   return json_({ ok: false, error: 'action' });
 }
 
@@ -69,9 +70,11 @@ function doPost(e) {
     var row = [slug_(name), new Date().toISOString(), name].concat(ratings, texts);
     var cols = row.length;
 
-    sh.getRange(1, 1, 1, cols).setValues([['id', 'Fecha', 'Nombre'].concat(labels).slice(0, cols)]).setFontWeight('bold');
     var ids = sh.getLastRow() > 1 ? sh.getRange(2, 1, sh.getLastRow() - 1, 1).getValues() : [];
     for (var i = 0; i < ids.length; i++) if (ids[i][0] === row[0]) return json_({ ok: false, error: 'duplicate' });
+    var head = ['id', 'Fecha', 'Nombre'].concat(labels);
+    while (head.length < cols) head.push('');
+    sh.getRange(1, 1, 1, cols).setValues([head.slice(0, cols)]).setFontWeight('bold');
     var target = sh.getLastRow() + 1;
     // Formato texto: nadie puede inyectar fórmulas desde el formulario.
     sh.getRange(target, 2, 1, cols - 1).setNumberFormat('@');

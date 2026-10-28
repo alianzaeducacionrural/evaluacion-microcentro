@@ -17,7 +17,8 @@ header { padding-right: 56px; }
 .box { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 18px; min-width: 0; }
 .box h3 { font: 400 26px/1.1 var(--display); letter-spacing: .03em; margin: 0 0 12px; }
 .qr { display: grid; justify-items: center; gap: 12px; text-align: center; }
-.qr-img { background: #fff; padding: 12px; border-radius: 14px; line-height: 0; cursor: zoom-in; }
+.qr-img { background: #fff; padding: 14px; border-radius: 16px; line-height: 0; cursor: zoom-in; width: fit-content; justify-self: center; }
+.qr-img > * { display: block; margin: 0; width: var(--s) !important; height: var(--s) !important; image-rendering: pixelated; }
 .qr-url { font-size: 13px; color: var(--muted); overflow-wrap: anywhere; margin: 0; }
 .qr .row-btns { display: flex; gap: 8px; width: 100%; }
 .qr .btn { flex: 1; min-height: 46px; font-size: 14px; padding: 0 12px; }
@@ -38,9 +39,10 @@ header { padding-right: 56px; }
 .status { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin: 0 0 14px; font-size: 13px; color: var(--muted); }
 .status .btn { min-height: 38px; font-size: 13px; padding: 0 14px; box-shadow: none; }
 
-.overlay { position: fixed; inset: 0; z-index: 20; background: #05020bf0; display: grid; place-content: center; gap: 18px; padding: 20px; text-align: center; cursor: zoom-out; }
-.overlay .qr-img { padding: 20px; }
-.overlay h2 { font-size: clamp(34px, 9vw, 64px); color: var(--pumpkin); margin: 0; }
+.overlay { position: fixed; inset: 0; z-index: 20; background: var(--night); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px; padding: 24px 16px; text-align: center; cursor: zoom-out; }
+.overlay .qr-img { padding: 22px; border-radius: 22px; cursor: zoom-out; box-shadow: 0 0 80px #ff7a1a66; }
+.overlay h2 { font-size: clamp(34px, 8vw, 64px); color: var(--pumpkin); margin: 0; line-height: 1; }
+.overlay p { margin: 0; }
 
 @media (min-width: 720px) {
   .top { grid-template-columns: 300px minmax(0, 1fr); }
@@ -80,7 +82,7 @@ header { padding-right: 56px; }
     <div class="lanes" id="lanes"></div>
   </div>
 </div>
-<div class="overlay" id="overlay" hidden><h2>Microcentro del Terror</h2><div class="qr-img" id="qr-big"></div><p class="hint">Toca para cerrar</p></div>
+<div class="overlay" id="overlay" hidden><h2>Microcentro del Terror</h2><div class="qr-img" id="qr-big"></div><p class="hint">Toca en cualquier parte para cerrar</p></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script src="config.js"></script>
@@ -91,6 +93,7 @@ let timer = null;
 
 function drawQR(target, size) {
   target.innerHTML = "";
+  target.style.setProperty("--s", size + "px");
   new QRCode(target, { text: FORM_URL, width: size, height: size, correctLevel: QRCode.CorrectLevel.M });
 }
 
@@ -137,7 +140,7 @@ async function load() {
 $("refresh").onclick = load;
 $("qr-url").textContent = FORM_URL;
 drawQR($("qr"), 200);
-$("zoom").onclick = $("qr").onclick = () => { drawQR($("qr-big"), Math.min(420, innerWidth - 80)); $("overlay").hidden = false; };
+$("zoom").onclick = $("qr").onclick = () => { drawQR($("qr-big"), Math.max(200, Math.min(520, innerWidth - 90, innerHeight - 280))); $("overlay").hidden = false; };
 $("overlay").onclick = () => { $("overlay").hidden = true; };
 $("copy").onclick = async () => {
   try { await navigator.clipboard.writeText(FORM_URL); $("copy").textContent = "¡Copiado!"; }
