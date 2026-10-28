@@ -23,7 +23,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Ensamblar sitio
-        run: mkdir site && cp index.html admin.html config.js style.css site/
+        run: mkdir site && cp index.html admin.html config.js style.css favicon.svg site/
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
