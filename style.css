@@ -1,0 +1,70 @@
+/* Móvil primero; los saltos de diseño usan min-width. Look único oscuro a propósito. */
+:root {
+  --night: #120a1f;
+  --night-2: #1c1030;
+  --card: #251642;
+  --line: #3d2868;
+  --text: #f3ecff;
+  --muted: #b3a1d6;
+  --pumpkin: #ff7a1a;
+  --glow: #ffb347;
+  --slime: #9be564;
+  --witch: #a96bff;
+  --ink: #1a0f2b;
+  --display: "Creepster", Impact, "Arial Narrow", cursive;
+  --body: "Outfit", system-ui, -apple-system, "Segoe UI", sans-serif;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  min-height: 100dvh;
+  background: var(--night) radial-gradient(700px 420px at 90% -8%, #3b1f6e66, transparent 70%) fixed;
+  color: var(--text);
+  font: 16px/1.5 var(--body);
+  padding: max(14px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) max(96px, calc(80px + env(safe-area-inset-bottom))) max(16px, env(safe-area-inset-left));
+  overflow-x: hidden;
+}
+body::before { content: ""; position: fixed; top: 18px; right: 16px; width: 44px; height: 44px; border-radius: 50%; background: #fff3d1; box-shadow: 0 0 40px 12px #ffe9a844, inset -9px -5px 0 0 #e9d49b; pointer-events: none; opacity: .85; }
+button, input, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+:focus-visible { outline: 3px solid var(--glow); outline-offset: 3px; border-radius: 8px; }
+[hidden] { display: none !important; }
+
+.wrap { position: relative; max-width: 720px; margin: 0 auto; }
+header { text-align: center; padding: 8px 56px 6px 0; text-align: left; }
+.kicker { font-size: 12px; letter-spacing: .18em; text-transform: uppercase; color: var(--glow); font-weight: 600; margin: 0; }
+h1 { font: 400 clamp(38px, 12vw, 76px)/1 var(--display); margin: 4px 0 2px; letter-spacing: .02em; color: var(--pumpkin); text-shadow: 0 0 24px #ff7a1a88, 0 3px 0 #6b2a00; text-wrap: balance; }
+.sub { color: var(--muted); margin: 0 0 18px; font-size: 15px; }
+h2 { font: 400 clamp(30px, 8vw, 42px)/1.05 var(--display); letter-spacing: .03em; margin: 0 0 6px; text-wrap: balance; }
+.hint { color: var(--muted); margin: 0 0 18px; font-size: 15px; }
+
+.panel { background: var(--card); border: 1px solid var(--line); border-radius: 20px; padding: 20px 16px; animation: rise .35s ease both; }
+@keyframes rise { from { opacity: 0; transform: translateY(12px) scale(.985); } }
+
+.btn { min-height: 52px; border: 0; border-radius: 14px; padding: 0 22px; font-weight: 700; background: var(--pumpkin); color: var(--ink); box-shadow: 0 5px 0 #a34700; transition: transform .12s, box-shadow .12s, opacity .15s; }
+.btn:active:not(:disabled) { transform: translateY(4px); box-shadow: 0 1px 0 #a34700; }
+.btn:disabled { opacity: .4; cursor: not-allowed; }
+.btn.ghost { background: transparent; color: var(--muted); box-shadow: none; border: 1px solid var(--line); }
+.notice { margin: 0 0 14px; padding: 10px 14px; border-radius: 12px; background: #ff4d6d22; border: 1px solid #ff4d6d77; font-size: 14px; }
+
+/* tablero estilo Padlet (admin) */
+.notes { display: grid; gap: 14px; padding: 6px 2px; }
+.note { background: var(--c); color: var(--ink); border-radius: 4px 4px 14px 4px; padding: 16px 16px 12px; box-shadow: 0 10px 22px #0007; transform: rotate(var(--r)); transition: transform .2s; animation: stick .5s cubic-bezier(.3,1.5,.5,1) both; min-width: 0; }
+.note:hover { transform: rotate(0) scale(1.03); position: relative; z-index: 2; }
+@keyframes stick { from { opacity: 0; transform: scale(.7) rotate(calc(var(--r) * 4)); } }
+.note p { margin: 0 0 10px; white-space: pre-wrap; overflow-wrap: anywhere; font-weight: 500; }
+.note footer { font-size: 13px; font-weight: 700; opacity: .75; }
+.n0 { --c: #ffb347; } .n1 { --c: #c9a2ff; } .n2 { --c: #b6f08a; } .n3 { --c: #ff9bb0; } .n4 { --c: #f5ebd7; }
+.empty { border: 2px dashed var(--line); border-radius: 16px; padding: 26px 16px; text-align: center; color: var(--muted); }
+
+@media (min-width: 720px) {
+  body { padding-top: 28px; }
+  body::before { width: 70px; height: 70px; top: 28px; right: 6vw; }
+  header { text-align: center; padding-right: 0; }
+  .panel { padding: 34px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}

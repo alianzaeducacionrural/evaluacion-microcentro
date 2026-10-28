@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#120a1f">
+<title>Panel Microcentro Embrujado</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Creepster&family=Outfit:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="style.css">
+<style>
+body { padding-bottom: 40px; }
+.wrap { max-width: 1120px; }
+header { padding-right: 56px; }
+.login { max-width: 420px; margin: 24px auto; }
+.login input { width: 100%; min-height: 50px; background: var(--night-2); border: 1px solid var(--line); border-radius: 14px; padding: 0 16px; margin-bottom: 12px; }
+.login .btn { width: 100%; }
+.top { display: grid; gap: 14px; margin-bottom: 24px; }
+.box { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 18px; min-width: 0; }
+.box h3 { font: 400 26px/1.1 var(--display); letter-spacing: .03em; margin: 0 0 12px; }
+.qr { display: grid; justify-items: center; gap: 12px; text-align: center; }
+.qr-img { background: #fff; padding: 12px; border-radius: 14px; line-height: 0; cursor: zoom-in; }
+.qr-url { font-size: 13px; color: var(--muted); overflow-wrap: anywhere; margin: 0; }
+.qr .row-btns { display: flex; gap: 8px; width: 100%; }
+.qr .btn { flex: 1; min-height: 46px; font-size: 14px; padding: 0 12px; }
+.who { display: flex; align-items: baseline; gap: 10px; }
+.who b { font: 400 56px/1 var(--display); color: var(--pumpkin); }
+.who span { color: var(--muted); }
+.meter { height: 8px; background: var(--night-2); border-radius: 9px; overflow: hidden; margin: 12px 0 0; }
+.meter i { display: block; height: 100%; background: linear-gradient(90deg, var(--slime), var(--glow)); width: 0; transition: width .6s; }
+.missing { color: var(--muted); font-size: 13px; margin: 12px 0 0; }
+.rows { display: grid; gap: 10px; }
+.avg { display: grid; grid-template-columns: minmax(0, 1fr) 40px; gap: 4px 10px; align-items: center; font-size: 14px; }
+.avg .track { grid-column: 1 / -1; grid-row: 2; height: 10px; background: var(--night-2); border-radius: 9px; overflow: hidden; }
+.avg .track i { display: block; height: 100%; background: linear-gradient(90deg, var(--witch), var(--pumpkin)); border-radius: 9px; transition: width .7s cubic-bezier(.2,.8,.2,1); }
+.avg b { text-align: right; font-variant-numeric: tabular-nums; color: var(--glow); }
+.lanes { display: grid; gap: 28px; }
+.lane > h3 { font: 400 clamp(28px, 6vw, 36px)/1.05 var(--display); letter-spacing: .03em; margin: 0 0 4px; text-wrap: balance; }
+.lane > p { margin: 0 0 14px; color: var(--muted); font-size: 14px; }
+.status { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin: 0 0 14px; font-size: 13px; color: var(--muted); }
+.status .btn { min-height: 38px; font-size: 13px; padding: 0 14px; box-shadow: none; }
+
+.overlay { position: fixed; inset: 0; z-index: 20; background: #05020bf0; display: grid; place-content: center; gap: 18px; padding: 20px; text-align: center; cursor: zoom-out; }
+.overlay .qr-img { padding: 20px; }
+.overlay h2 { font-size: clamp(34px, 9vw, 64px); color: var(--pumpkin); margin: 0; }
+
+@media (min-width: 720px) {
+  .top { grid-template-columns: 300px minmax(0, 1fr); }
+  .top .avgbox { grid-column: 1 / -1; }
+}
+@media (min-width: 960px) {
+  .top { grid-template-columns: 300px minmax(0, 1fr) minmax(0, 1.3fr); }
+  .top .avgbox { grid-column: auto; }
+  .lanes { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; align-items: start; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <p class="kicker">Panel de administración</p>
+    <h1>Microcentro Embrujado</h1>
+  </header>
+
+  <section id="login" class="panel login" hidden>
+    <h2>Clave de acceso</h2>
+    <p class="hint">La clave está en la pestaña “Acceso” de la hoja de cálculo.</p>
+    <p class="notice" id="login-err" hidden>La clave no es correcta.</p>
+    <input id="key" type="password" autocomplete="current-password" placeholder="Clave de administrador" aria-label="Clave de administrador">
+    <button class="btn" id="enter">Entrar</button>
+  </section>
+
+  <div id="app" hidden>
+    <p class="status"><span id="updated">Cargando…</span><button class="btn ghost" id="refresh">Actualizar</button></p>
+    <div class="top">
+      <div class="box qr">
+        <h3>Escanea y evalúa</h3>
+        <div class="qr-img" id="qr" title="Ampliar"></div>
+        <p class="qr-url" id="qr-url"></p>
+        <div class="row-btns"><button class="btn" id="zoom">Ampliar QR</button><button class="btn ghost" id="copy">Copiar enlace</button></div>
+      </div>
+      <div class="box">
+        <h3>Quiénes respondieron</h3>
+        <div class="who"><b id="n">0</b><span id="of"></span></div>
+        <div class="meter"><i id="meter"></i></div>
+        <p class="missing" id="missing"></p>
+      </div>
+      <div class="box avgbox"><h3>Promedio por pregunta</h3><div class="rows" id="avgs"></div></div>
+    </div>
+    <div class="lanes" id="lanes"></div>
+  </div>
+</div>
+<div class="overlay" id="overlay" hidden><h2>Microcentro Embrujado</h2><div class="qr-img" id="qr-big"></div><p class="hint">Toca para cerrar</p></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="config.js"></script>
+<script>
+const { SCALE, OPEN, NAMES } = CFG;
+const FORM_URL = CFG.FORM_URL || new URL("./", location.href).href;
+let key = "", timer = null;
+try { key = sessionStorage.getItem("mk") || ""; } catch {}
+
+function drawQR(target, size) {
+  target.innerHTML = "";
+  new QRCode(target, { text: FORM_URL, width: size, height: size, correctLevel: QRCode.CorrectLevel.M });
+}
+
+function hash(s) { let h = 0; for (const c of s) h = (h * 31 + c.charCodeAt(0)) >>> 0; return h; }
+
+function draw(rows) {
+  const list = rows.map((r) => ({
+    name: r[2], ts: r[1],
+    ratings: r.slice(3, 3 + SCALE.length).map(Number),
+    texts: r.slice(3 + SCALE.length, 3 + SCALE.length + OPEN.length).map(String)
+  })).sort((a, b) => String(b.ts).localeCompare(String(a.ts)));
+  const n = list.length;
+  $("n").textContent = n;
+  $("of").textContent = `de ${NAMES.length} Padrinos`;
+  $("meter").style.width = (n / NAMES.length * 100) + "%";
+  const answered = new Set(list.map((r) => slug(r.name)));
+  const missing = NAMES.filter((x) => !answered.has(slug(x)));
+  $("missing").textContent = missing.length && n ? "Faltan: " + missing.map(first).join(", ") : "";
+  $("avgs").innerHTML = SCALE.map((q, i) => {
+    const v = list.map((r) => r.ratings[i]).filter((x) => x > 0);
+    const a = v.length ? v.reduce((s, x) => s + x, 0) / v.length : 0;
+    return `<div class="avg"><span>${esc(q.t)}</span><b>${a ? a.toFixed(1) : "–"}</b><div class="track"><i style="width:${a / 5 * 100}%"></i></div></div>`;
+  }).join("");
+  const seen = draw.seen || (draw.seen = new Set());
+  $("lanes").innerHTML = OPEN.map((q, k) => {
+    const notes = list.filter((r) => r.texts[k]);
+    return `<div class="lane"><h3>${esc(q.t)}</h3><p>${esc(q.d)}</p><div class="notes">${notes.length
+      ? notes.map((r, j) => `<article class="note n${(j + k) % 5}" style="--r:${((hash(r.name) % 5) - 2) * .8}deg"><p>${esc(r.texts[k])}</p><footer>${esc(r.name)}</footer></article>`).join("")
+      : `<div class="empty">Aún no hay notas.</div>`}</div></div>`;
+  }).join("");
+}
+
+async function load() {
+  try {
+    const r = await api({ action: "admin", key });
+    $("login").hidden = true; $("app").hidden = false;
+    draw(r.rows);
+    $("updated").textContent = "Actualizado " + new Date().toLocaleTimeString("es-CO", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+    if (!timer) timer = setInterval(() => { if (!document.hidden) load(); }, 10000);
+  } catch (e) {
+    if (e.message === "auth") {
+      try { sessionStorage.removeItem("mk"); } catch {}
+      $("app").hidden = true; $("login").hidden = false; $("login-err").hidden = !key; key = "";
+      clearInterval(timer); timer = null;
+    } else {
+      $("updated").textContent = "Sin conexión. Reintentando…";
+    }
+  }
+}
+
+$("enter").onclick = () => {
+  key = $("key").value.trim();
+  try { sessionStorage.setItem("mk", key); } catch {}
+  load();
+};
+$("key").onkeydown = (e) => { if (e.key === "Enter") $("enter").click(); };
+$("refresh").onclick = load;
+$("qr-url").textContent = FORM_URL;
+drawQR($("qr"), 200);
+$("zoom").onclick = $("qr").onclick = () => { drawQR($("qr-big"), Math.min(420, innerWidth - 80)); $("overlay").hidden = false; };
+$("overlay").onclick = () => { $("overlay").hidden = true; };
+$("copy").onclick = async () => {
+  try { await navigator.clipboard.writeText(FORM_URL); $("copy").textContent = "¡Copiado!"; }
+  catch { $("copy").textContent = "Copia el enlace de arriba"; }
+  setTimeout(() => { $("copy").textContent = "Copiar enlace"; }, 1800);
+};
+
+if (!CFG.API_URL) { $("login").hidden = false; $("login-err").hidden = false; $("login-err").textContent = "Falta conectar el panel con la hoja de cálculo (API_URL)."; }
+else if (key) load(); else $("login").hidden = false;
+</script>
+</body>
+</html>

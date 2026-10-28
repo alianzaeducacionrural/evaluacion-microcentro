@@ -1,0 +1,4 @@
+.clasp.json
+gas/.clasp.json
+node_modules
+.env

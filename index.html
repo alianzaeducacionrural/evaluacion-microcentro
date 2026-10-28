@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#120a1f">
+<title>Microcentro Embrujado</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Creepster&family=Outfit:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="style.css">
+<style>
+.progress { margin: 0 0 12px; }
+.progress .bar { height: 10px; background: var(--night-2); border: 1px solid var(--line); border-radius: 99px; overflow: hidden; }
+.progress .fill { height: 100%; width: 0; background: linear-gradient(90deg, var(--witch), var(--pumpkin)); transition: width .5s cubic-bezier(.2,.8,.2,1); }
+.progress p { margin: 6px 2px 0; font-size: 13px; color: var(--muted); display: flex; justify-content: space-between; }
+
+.search { width: 100%; min-height: 50px; background: var(--night-2); border: 1px solid var(--line); border-radius: 14px; padding: 0 16px; margin-bottom: 10px; }
+.search:focus { border-color: var(--pumpkin); outline: 3px solid #ff7a1a44; }
+.names { display: grid; gap: 8px; }
+.name { min-height: 54px; text-align: left; background: var(--night-2); border: 1px solid var(--line); border-radius: 14px; padding: 8px 14px; display: flex; align-items: center; justify-content: space-between; gap: 8px; transition: border-color .15s, background .15s; }
+.name:active { border-color: var(--pumpkin); background: #2d1b52; }
+.name span:first-child { overflow-wrap: anywhere; }
+.done-tag { flex: none; font-size: 12px; color: var(--ink); background: var(--slime); border-radius: 99px; padding: 1px 9px; font-weight: 700; }
+
+.rate { display: flex; gap: 2px; margin: 4px -4px 8px; }
+.pk { flex: 1 1 0; min-width: 0; max-width: 96px; background: none; border: 0; padding: 4px; --b: #3a2a5c; --f: #1a0f2b; --g: transparent; transition: transform .18s cubic-bezier(.3,1.6,.5,1); }
+.pk svg { width: 100%; display: block; overflow: visible; transition: filter .2s; }
+.pk .body { fill: var(--b); transition: fill .2s; }
+.pk .face { fill: var(--f); }
+.pk .stem { fill: none; stroke: #6fae3e; stroke-width: 4; stroke-linecap: round; }
+.pk.on { --b: var(--pumpkin); --f: #ffe6a8; --g: #ff7a1acc; }
+.pk.on svg { filter: drop-shadow(0 0 9px var(--g)); }
+.pk.pop { animation: pop .4s ease; }
+@keyframes pop { 40% { transform: scale(1.3) rotate(8deg); } }
+@media (hover: hover) {
+  .pk:hover { transform: translateY(-6px) scale(1.1) rotate(-4deg); }
+  .rate:hover .pk { --b: var(--pumpkin); --f: #ffe6a8; --g: #ff7a1acc; }
+  .rate .pk:hover ~ .pk { --b: #3a2a5c; --f: #1a0f2b; --g: transparent; }
+  .rate:hover .pk svg { filter: drop-shadow(0 0 9px var(--g)); }
+}
+.verdict { text-align: center; min-height: 34px; font: 400 26px/1.2 var(--display); letter-spacing: .04em; color: var(--glow); margin: 0; }
+.scale-ends { display: flex; justify-content: space-between; font-size: 12px; color: var(--muted); padding: 0 4px; }
+
+textarea { width: 100%; min-height: 170px; resize: vertical; background: var(--night-2); border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; line-height: 1.5; }
+textarea::placeholder { color: #7f6ba6; }
+textarea:focus { border-color: var(--pumpkin); outline: 3px solid #ff7a1a44; }
+
+.actions { position: fixed; inset: auto 0 0 0; z-index: 5; padding: 14px max(16px, env(safe-area-inset-right)) max(14px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left)); background: linear-gradient(transparent, var(--night) 35%); }
+.actions > div { max-width: 720px; margin: 0 auto; display: flex; gap: 10px; }
+.actions .btn:not(.ghost) { flex: 1; }
+.actions .btn.ghost { flex: 0 0 104px; }
+
+.thanks { text-align: center; }
+.thanks .big { width: 110px; margin: 0 auto 6px; --b: #ff7a1a; --f: #ffe6a8; animation: float 3s ease-in-out infinite; }
+.thanks .big svg { width: 100%; filter: drop-shadow(0 0 14px #ff7a1acc); }
+@keyframes float { 50% { transform: translateY(-10px) rotate(3deg); } }
+.thanks .btn { width: 100%; margin-top: 8px; }
+
+@media (min-width: 720px) {
+  .names { grid-template-columns: 1fr 1fr; }
+  .pk { padding: 8px; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <p class="kicker">Equipo de Padrinos</p>
+    <h1>Microcentro Embrujado</h1>
+    <p class="sub">Evalúa el Microcentro en unos 3 minutos.</p>
+  </header>
+  <div class="progress" id="progress" hidden>
+    <div class="bar"><div class="fill" id="fill"></div></div>
+    <p><span id="plabel"></span><span id="pname"></span></p>
+  </div>
+  <main id="step"></main>
+</div>
+<div class="actions" id="actions" hidden><div id="actions-in"></div></div>
+
+<script src="config.js"></script>
+<script>
+const { SCALE, OPEN, VERDICT, NAMES } = CFG;
+const TOTAL = SCALE.length + OPEN.length;
+const PUMPKIN = `<svg viewBox="0 0 48 48" aria-hidden="true"><path class="stem" d="M24 11c0-3 1-6 5-8"/><ellipse class="body" cx="24" cy="29" rx="21" ry="17"/><path class="face" d="M13 23l6 0-3-7zM29 23l6 0-3-7zM13 32l4 5 3-4 4 5 4-5 3 4 4-5-2 10H15z"/></svg>`;
+
+let done = new Set();
+const st = { step: 0, name: "", ratings: Array(SCALE.length).fill(0), texts: ["", ""], saving: false, error: "", filter: "" };
+
+function bar(back, nextLabel, nextDisabled) {
+  $("actions").hidden = false;
+  $("actions-in").innerHTML = `<button class="btn ghost" id="back">Atrás</button><button class="btn" id="next" ${nextDisabled ? "disabled" : ""}>${nextLabel}</button>`;
+  $("back").onclick = back;
+}
+
+function render() {
+  const el = $("step");
+  const showProg = st.step >= 1 && st.step <= TOTAL;
+  $("progress").hidden = !showProg;
+  if (showProg) {
+    $("fill").style.width = ((st.step - 1) / TOTAL * 100) + "%";
+    $("plabel").textContent = `Paso ${st.step} de ${TOTAL}`;
+    $("pname").textContent = first(st.name);
+  }
+  $("actions").hidden = true;
+
+  if (st.step === 0) {
+    el.innerHTML = `<div class="panel">${CFG.API_URL ? "" : `<p class="notice">Falta conectar el formulario con la hoja de cálculo.</p>`}
+      <h2>¿Quién se atreve a entrar?</h2><p class="hint">Busca y toca tu nombre para empezar.</p>
+      <input class="search" id="q" type="search" placeholder="Buscar mi nombre" autocomplete="off" value="${esc(st.filter)}" aria-label="Buscar mi nombre">
+      <div class="names" id="names"></div></div>`;
+    $("q").oninput = (e) => { st.filter = e.target.value; renderNames(); };
+    renderNames();
+    return;
+  }
+
+  if (st.step <= SCALE.length) {
+    const i = st.step - 1, q = SCALE[i], v = st.ratings[i];
+    el.innerHTML = `<div class="panel"><h2>${esc(q.t)}</h2><p class="hint">${esc(q.d)}</p>
+      <div class="rate" role="radiogroup" aria-label="${esc(q.t)}">${[1, 2, 3, 4, 5].map((n) => `<button class="pk ${n <= v ? "on" : ""}" role="radio" aria-checked="${n === v}" aria-label="${n} de 5" data-v="${n}">${PUMPKIN}</button>`).join("")}</div>
+      <div class="scale-ends"><span>Espantoso</span><span>Monstruoso</span></div>
+      <p class="verdict" aria-live="polite">${VERDICT[v]}</p></div>`;
+    bar(() => go(-1), "Siguiente", !v);
+    $("next").onclick = () => { clearTimeout(st.t); go(1); };
+    el.querySelectorAll(".pk").forEach((b) => b.onclick = () => {
+      st.ratings[i] = +b.dataset.v;
+      el.querySelectorAll(".pk").forEach((p) => p.classList.toggle("on", +p.dataset.v <= st.ratings[i]));
+      b.classList.add("pop");
+      el.querySelector(".verdict").textContent = VERDICT[st.ratings[i]];
+      $("next").disabled = false;
+      clearTimeout(st.t);
+      st.t = setTimeout(() => go(1), 650);
+    });
+    return;
+  }
+
+  if (st.step <= TOTAL) {
+    const k = st.step - SCALE.length - 1, q = OPEN[k], last = st.step === TOTAL;
+    el.innerHTML = `<div class="panel">${st.error ? `<p class="notice">${esc(st.error)}</p>` : ""}
+      <h2>${esc(q.t)}</h2><p class="hint">${esc(q.d)}</p>
+      <textarea id="txt" maxlength="600" placeholder="${esc(q.ph)}" aria-label="${esc(q.t)}"></textarea></div>`;
+    const t = $("txt");
+    t.value = st.texts[k];
+    t.oninput = () => { st.texts[k] = t.value; };
+    bar(() => go(-1), st.saving ? "Enviando…" : last ? "Enviar" : "Siguiente", st.saving);
+    $("next").onclick = () => last ? submit() : go(1);
+    return;
+  }
+
+  el.innerHTML = `<div class="panel thanks"><div class="big">${PUMPKIN}</div>
+    <h2>¡Gracias, ${esc(first(st.name))}!</h2><p class="hint">Tu evaluación quedó guardada. Feliz Halloween.</p>
+    <button class="btn ghost" id="redo">Corregir mis respuestas</button></div>`;
+  $("redo").onclick = () => { st.step = 1; render(); };
+}
+
+function renderNames() {
+  const f = slug(st.filter);
+  const list = NAMES.filter((n) => slug(n).includes(f));
+  $("names").innerHTML = list.length
+    ? list.map((n) => `<button class="name" data-n="${esc(n)}"><span>${esc(n)}</span>${done.has(slug(n)) ? `<span class="done-tag">Listo</span>` : ""}</button>`).join("")
+    : `<div class="empty">Ningún nombre coincide.</div>`;
+  $("names").querySelectorAll(".name").forEach((b) => b.onclick = () => {
+    st.name = b.dataset.n; st.ratings = Array(SCALE.length).fill(0); st.texts = ["", ""]; st.error = ""; go(1);
+  });
+}
+
+function go(d) {
+  st.step = Math.max(0, st.step + d); st.error = "";
+  if (st.step === 0) { st.name = ""; st.filter = ""; }
+  render();
+  window.scrollTo({ top: 0 });
+}
+
+async function submit() {
+  st.saving = true; st.error = ""; render();
+  try {
+    await api(null, {
+      action: "submit", name: st.name, ratings: st.ratings, texts: st.texts,
+      labels: SCALE.map((q) => q.t).concat(OPEN.map((q) => q.t))
+    });
+    done.add(slug(st.name));
+    st.step = TOTAL + 1;
+  } catch {
+    st.error = "No se pudo enviar. Revisa tu conexión e intenta de nuevo.";
+  }
+  st.saving = false;
+  render();
+}
+
+render();
+if (CFG.API_URL) api({ action: "names" }).then((r) => { done = new Set(r.done); if (st.step === 0) renderNames(); }).catch(() => {});
+</script>
+</body>
+</html>
