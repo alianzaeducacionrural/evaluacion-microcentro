@@ -12,9 +12,6 @@
 body { padding-bottom: 40px; }
 .wrap { max-width: 1120px; }
 header { padding-right: 56px; }
-.login { max-width: 420px; margin: 24px auto; }
-.login input { width: 100%; min-height: 50px; background: var(--night-2); border: 1px solid var(--line); border-radius: 14px; padding: 0 16px; margin-bottom: 12px; }
-.login .btn { width: 100%; }
 .top { display: grid; gap: 14px; margin-bottom: 24px; }
 .box { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 18px; min-width: 0; }
 .box h3 { font: 400 26px/1.1 var(--display); letter-spacing: .03em; margin: 0 0 12px; }
@@ -62,15 +59,7 @@ header { padding-right: 56px; }
     <h1>Microcentro Embrujado</h1>
   </header>
 
-  <section id="login" class="panel login" hidden>
-    <h2>Clave de acceso</h2>
-    <p class="hint">La clave está en la pestaña “Acceso” de la hoja de cálculo.</p>
-    <p class="notice" id="login-err" hidden>La clave no es correcta.</p>
-    <input id="key" type="password" autocomplete="current-password" placeholder="Clave de administrador" aria-label="Clave de administrador">
-    <button class="btn" id="enter">Entrar</button>
-  </section>
-
-  <div id="app" hidden>
+  <div id="app">
     <p class="status"><span id="updated">Cargando…</span><button class="btn ghost" id="refresh">Actualizar</button></p>
     <div class="top">
       <div class="box qr">
@@ -97,8 +86,7 @@ header { padding-right: 56px; }
 <script>
 const { SCALE, OPEN, NAMES } = CFG;
 const FORM_URL = CFG.FORM_URL || new URL("./", location.href).href;
-let key = "", timer = null;
-try { key = sessionStorage.getItem("mk") || ""; } catch {}
+let timer = null;
 
 function drawQR(target, size) {
   target.innerHTML = "";
@@ -136,28 +124,15 @@ function draw(rows) {
 
 async function load() {
   try {
-    const r = await api({ action: "admin", key });
-    $("login").hidden = true; $("app").hidden = false;
+    const r = await api({ action: "admin" });
     draw(r.rows);
     $("updated").textContent = "Actualizado " + new Date().toLocaleTimeString("es-CO", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
     if (!timer) timer = setInterval(() => { if (!document.hidden) load(); }, 10000);
   } catch (e) {
-    if (e.message === "auth") {
-      try { sessionStorage.removeItem("mk"); } catch {}
-      $("app").hidden = true; $("login").hidden = false; $("login-err").hidden = !key; key = "";
-      clearInterval(timer); timer = null;
-    } else {
-      $("updated").textContent = "Sin conexión. Reintentando…";
-    }
+    $("updated").textContent = "Sin conexión. Reintentando…";
   }
 }
 
-$("enter").onclick = () => {
-  key = $("key").value.trim();
-  try { sessionStorage.setItem("mk", key); } catch {}
-  load();
-};
-$("key").onkeydown = (e) => { if (e.key === "Enter") $("enter").click(); };
 $("refresh").onclick = load;
 $("qr-url").textContent = FORM_URL;
 drawQR($("qr"), 200);
@@ -169,8 +144,7 @@ $("copy").onclick = async () => {
   setTimeout(() => { $("copy").textContent = "Copiar enlace"; }, 1800);
 };
 
-if (!CFG.API_URL) { $("login").hidden = false; $("login-err").hidden = false; $("login-err").textContent = "Falta conectar el panel con la hoja de cálculo (API_URL)."; }
-else if (key) load(); else $("login").hidden = false;
+if (CFG.API_URL) load(); else $("updated").textContent = "Falta conectar el panel con la hoja de cálculo (API_URL).";
 </script>
 </body>
 </html>

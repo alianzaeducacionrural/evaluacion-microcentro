@@ -2,7 +2,7 @@
  * API del formulario "Microcentro Embrujado".
  * Guarda una fila por Padrino en la hoja `Respuestas` (se crea sola en la carpeta de Drive).
  *
- * Primera vez: ejecutar `setup` desde el editor (autoriza permisos y crea la hoja + la clave de administrador).
+ * Primera vez: ejecutar `setup` desde el editor (autoriza permisos y crea la hoja).
  */
 var FOLDER_ID = '1XOBM5ubLhk7TmFr1-FX07-9QwS542XzT';
 var SS_TITLE = 'Evaluación Microcentro - Padrinos';
@@ -12,12 +12,7 @@ var FIXED = 3; // id, fecha, nombre
 function props_() { return PropertiesService.getScriptProperties(); }
 
 function setup() {
-  var ss = getSS_();
-  var p = props_();
-  if (!p.getProperty('ADMIN_KEY')) p.setProperty('ADMIN_KEY', Utilities.getUuid().slice(0, 8));
-  var acc = ss.getSheetByName('Acceso') || ss.insertSheet('Acceso');
-  acc.getRange('A1:B1').setValues([['Clave de administrador', p.getProperty('ADMIN_KEY')]]);
-  Logger.log(ss.getUrl());
+  Logger.log(getSS_().getUrl());
 }
 
 function getSS_() {
@@ -52,7 +47,6 @@ function doGet(e) {
     return json_({ ok: true, done: rows_().map(function (r) { return r[0]; }) });
   }
   if (a === 'admin') {
-    if (!e.parameter.key || e.parameter.key !== props_().getProperty('ADMIN_KEY')) return json_({ ok: false, error: 'auth' });
     return json_({ ok: true, rows: rows_() });
   }
   return json_({ ok: false, error: 'action' });
