@@ -16,10 +16,13 @@ header { padding-right: 56px; }
 .top { display: grid; gap: 14px; margin-bottom: 24px; }
 .box { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 18px; min-width: 0; }
 .box h3 { font: 400 26px/1.1 var(--display); letter-spacing: .03em; margin: 0 0 12px; }
-.qr { display: grid; justify-items: center; gap: 12px; text-align: center; }
-.qr-img { background: #fff; padding: 14px; border-radius: 16px; line-height: 0; cursor: zoom-in; width: fit-content; justify-self: center; }
+.qr { display: grid; justify-items: center; gap: 14px; text-align: center; border-radius: 150px 150px 18px 18px; padding: 44px 18px 20px; background: linear-gradient(180deg, #33205c, var(--card) 55%); border-color: #5a3a9a; box-shadow: inset 0 2px 0 #ffffff14; }
+.qr h3 { margin: 0; color: var(--glow); text-shadow: 0 0 18px #ff7a1a66; }
+.qr-cap { margin: -6px 0 0; font-size: 14px; color: var(--muted); max-width: 22ch; }
+.qr-img { background: #fff; padding: 14px; border-radius: 18px; line-height: 0; cursor: zoom-in; width: fit-content; justify-self: center; box-shadow: 0 0 0 4px var(--pumpkin), 0 0 0 9px #ff7a1a33, 0 0 44px #ff7a1a66; transition: transform .2s; }
+.qr-img:hover { transform: scale(1.02); }
 .qr-img > * { margin: 0; width: var(--s) !important; height: var(--s) !important; image-rendering: pixelated; }
-.qr-url { font-size: 13px; color: var(--muted); overflow-wrap: anywhere; margin: 0; }
+.qr-url { font-size: 13px; color: var(--text); background: var(--night-2); border: 1px dashed var(--line); border-radius: 99px; padding: 7px 14px; margin: 0; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .qr .row-btns { display: flex; gap: 8px; width: 100%; }
 .qr .btn { flex: 1; min-height: 46px; font-size: 14px; padding: 0 12px; }
 .who { display: flex; align-items: baseline; gap: 10px; }
@@ -67,6 +70,7 @@ header { padding-right: 56px; }
     <div class="top">
       <div class="box qr">
         <h3>Escanea y evalúa</h3>
+        <p class="qr-cap">Apunta la cámara del celular al código</p>
         <div class="qr-img" id="qr" title="Ampliar"></div>
         <p class="qr-url" id="qr-url"></p>
         <div class="row-btns"><button class="btn" id="zoom">Ampliar QR</button><button class="btn ghost" id="copy">Copiar enlace</button></div>
@@ -155,7 +159,7 @@ $("lanes").onclick = (e) => {
 };
 $("nm-x").onclick = () => $("note-modal").close();
 $("note-modal").onclick = (e) => { if (e.target === e.currentTarget) e.currentTarget.close(); };
-$("qr-url").textContent = FORM_URL;
+$("qr-url").textContent = FORM_URL.replace(/^https?:///, "").replace(//$/, "");
 drawQR($("qr"), 200);
 $("zoom").onclick = $("qr").onclick = () => { drawQR($("qr-big"), Math.max(200, Math.min(520, innerWidth - 90, innerHeight - 280))); $("overlay").hidden = false; };
 $("overlay").onclick = () => { $("overlay").hidden = true; };
