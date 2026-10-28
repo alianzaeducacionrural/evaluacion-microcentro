@@ -52,11 +52,19 @@ textarea:focus { border-color: var(--pumpkin); outline: 3px solid #ff7a1a44; }
 .actions .btn:not(.ghost) { flex: 1; }
 .actions .btn.ghost { flex: 0 0 104px; }
 
+dialog { border: 1px solid var(--pumpkin); border-radius: 22px; background: var(--card); color: var(--text); padding: 28px 22px; width: min(92vw, 400px); text-align: center; box-shadow: 0 0 60px #ff7a1a55; }
+dialog::backdrop { background: #05020bcc; }
+dialog[open] { animation: rise .35s ease both; }
+dialog .big { width: 96px; margin: 0 auto 4px; --b: #ff7a1a; --f: #ffe6a8; animation: float 3s ease-in-out infinite; }
+dialog .big svg { width: 100%; filter: drop-shadow(0 0 14px #ff7a1acc); }
+dialog .big .body { fill: var(--b); } dialog .big .face { fill: var(--f); } dialog .big .stem { fill: none; stroke: #6fae3e; stroke-width: 4; stroke-linecap: round; }
+dialog p { color: var(--muted); margin: 0 0 18px; }
+dialog .btn { width: 100%; }
+.name:disabled { opacity: .55; cursor: not-allowed; }
 .thanks { text-align: center; }
 .thanks .big { width: 110px; margin: 0 auto 6px; --b: #ff7a1a; --f: #ffe6a8; animation: float 3s ease-in-out infinite; }
 .thanks .big svg { width: 100%; filter: drop-shadow(0 0 14px #ff7a1acc); }
 @keyframes float { 50% { transform: translateY(-10px) rotate(3deg); } }
-.thanks .btn { width: 100%; margin-top: 8px; }
 
 @media (min-width: 720px) {
   .names { grid-template-columns: 1fr 1fr; }
@@ -77,6 +85,7 @@ textarea:focus { border-color: var(--pumpkin); outline: 3px solid #ff7a1a44; }
   </div>
   <main id="step"></main>
 </div>
+<dialog id="thanks" aria-labelledby="thanks-t"><div class="big"></div><h2 id="thanks-t">¡Evaluación enviada!</h2><p id="thanks-p"></p><button class="btn" id="thanks-ok">Cerrar</button></dialog>
 <div class="actions" id="actions" hidden><div id="actions-in"></div></div>
 
 <script src="config.js"></script>
@@ -84,6 +93,7 @@ textarea:focus { border-color: var(--pumpkin); outline: 3px solid #ff7a1a44; }
 const { SECTIONS, SCALE, OPEN, LEVELS, VERDICT, NAMES } = CFG;
 const TOTAL = SECTIONS.length + OPEN.length;
 const PUMPKIN = `<svg viewBox="0 0 48 48" aria-hidden="true"><path class="stem" d="M24 11c0-3 1-6 5-8"/><ellipse class="body" cx="24" cy="29" rx="21" ry="17"/><path class="face" d="M13 23l6 0-3-7zM29 23l6 0-3-7zM13 32l4 5 3-4 4 5 4-5 3 4 4-5-2 10H15z"/></svg>`;
+$("thanks").querySelector(".big").innerHTML = PUMPKIN;
 const offsets = SECTIONS.map((_, i) => SECTIONS.slice(0, i).reduce((n, s) => n + s.items.length, 0));
 
 let done = new Set();
@@ -155,16 +165,22 @@ function render() {
   }
 
   el.innerHTML = `<div class="panel thanks"><div class="big">${PUMPKIN}</div>
-    <h2>¡Gracias, ${esc(first(st.name))}!</h2><p class="hint">Tu evaluación quedó guardada. Feliz Halloween.</p>
-    <button class="btn ghost" id="redo">Corregir mis respuestas</button></div>`;
-  $("redo").onclick = () => { st.step = 1; render(); };
+    <h2>¡Gracias, ${esc(first(st.name))}!</h2><p class="hint">Tu evaluación quedó registrada. Ya puedes cerrar esta página.</p></div>`;
+  showThanks();
 }
+
+function showThanks() {
+  const d = $("thanks");
+  $("thanks-p").textContent = `Gracias por tu tiempo, ${first(st.name)}. Tu opinión ayuda a mejorar el próximo Microcentro.`;
+  if (!d.open) d.showModal();
+}
+$("thanks-ok").onclick = () => $("thanks").close();
 
 function renderNames() {
   const f = slug(st.filter);
   const list = NAMES.filter((n) => slug(n).includes(f));
   $("names").innerHTML = list.length
-    ? list.map((n) => `<button class="name" data-n="${esc(n)}"><span>${esc(n)}</span>${done.has(slug(n)) ? `<span class="done-tag">Listo</span>` : ""}</button>`).join("")
+    ? list.map((n) => `<button class="name" data-n="${esc(n)}" ${done.has(slug(n)) ? "disabled" : ""}><span>${esc(n)}</span>${done.has(slug(n)) ? `<span class="done-tag">Ya respondió</span>` : ""}</button>`).join("")
     : `<div class="empty">Ningún nombre coincide.</div>`;
   $("names").querySelectorAll(".name").forEach((b) => b.onclick = () => {
     st.name = b.dataset.n; st.ratings = Array(SCALE.length).fill(0); st.texts = OPEN.map(() => ""); st.error = ""; go(1);
@@ -187,7 +203,14 @@ async function submit() {
     });
     done.add(slug(st.name));
     st.step = TOTAL + 1;
-  } catch {
+  } catch (e) {
+    if (e.message === "duplicate") {
+      done.add(slug(st.name));
+      st.step = 0; st.filter = ""; st.name = "";
+      st.saving = false; render();
+      $("step").insertAdjacentHTML("afterbegin", `<p class="notice">Esa persona ya envió su evaluación. Solo se permite un envío por participante.</p>`);
+      return;
+    }
     st.error = "No se pudo enviar. Revisa tu conexión e intenta de nuevo.";
   }
   st.saving = false;

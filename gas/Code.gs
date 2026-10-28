@@ -70,10 +70,10 @@ function doPost(e) {
     var cols = row.length;
 
     sh.getRange(1, 1, 1, cols).setValues([['id', 'Fecha', 'Nombre'].concat(labels).slice(0, cols)]).setFontWeight('bold');
+    var ids = sh.getLastRow() > 1 ? sh.getRange(2, 1, sh.getLastRow() - 1, 1).getValues() : [];
+    for (var i = 0; i < ids.length; i++) if (ids[i][0] === row[0]) return json_({ ok: false, error: 'duplicate' });
+    var target = sh.getLastRow() + 1;
     // Formato texto: nadie puede inyectar fórmulas desde el formulario.
-    var target = 0, ids = sh.getLastRow() > 1 ? sh.getRange(2, 1, sh.getLastRow() - 1, 1).getValues() : [];
-    for (var i = 0; i < ids.length; i++) if (ids[i][0] === row[0]) { target = i + 2; break; }
-    if (!target) target = sh.getLastRow() + 1;
     sh.getRange(target, 2, 1, cols - 1).setNumberFormat('@');
     sh.getRange(target, 1, 1, cols).setValues([row]);
     return json_({ ok: true });
