@@ -15,21 +15,43 @@ window.CFG = {
     "Jonathan Gerardo Orozco Herrera", "José Daniel García Echeverry"
   ],
 
-  // Borradores: se reemplazan por las preguntas definitivas.
-  SCALE: [
-    { t: "Organización y logística", d: "Convocatoria, lugar, horarios y condiciones del encuentro." },
-    { t: "Claridad de los objetivos", d: "Se entendió para qué era el Microcentro y qué se esperaba de nosotros." },
-    { t: "Utilidad de los contenidos", d: "Lo que se trató me sirve para mi trabajo con los caficultores." },
-    { t: "Manejo del tiempo", d: "La agenda se cumplió y cada tema tuvo su espacio." },
-    { t: "Participación del equipo", d: "Hubo diálogo, escucha y aportes de los Padrinos." },
-    { t: "Experiencia general", d: "Qué tan satisfecho quedé con el Microcentro." }
+  // Escala: 1 = Por fortalecer ... 4 = Excelente.
+  MAX: 4,
+  LEVELS: ["", "Por fortalecer", "Aceptable", "Bueno", "Excelente"],
+  VERDICT: ["", "Por fortalecer", "Aceptable", "¡Bueno!", "¡Excelente!"],
+
+  SECTIONS: [
+    { t: "Componente administrativo", d: "Valora cada afirmación según lo observado durante el microcentro.", items: [
+      { l: "Administrativo: actividades y Guía 34", t: "Las actividades propuestas facilitaron la comprensión de la Guía 34 desde la gestión administrativa." },
+      { l: "Administrativo: estrategias y necesidades de las IE", t: "Las estrategias utilizadas permitieron relacionar la temática con situaciones y necesidades de las instituciones educativas." }
+    ] },
+    { t: "Componente curricular", d: "Valora cada afirmación según lo observado durante el microcentro.", items: [
+      { l: "Curricular: actividades y Guía 34", t: "Las actividades facilitaron la comprensión de la Guía 34 desde la gestión académica y curricular." },
+      { l: "Curricular: prácticas, evaluación y aprendizajes", t: "El abordaje temático permitió establecer relaciones con las prácticas pedagógicas, la evaluación y el mejoramiento de los aprendizajes." }
+    ] },
+    { t: "Componente de capacitación", d: "Valora cada afirmación según lo observado durante el microcentro.", items: [
+      { l: "Capacitación: apropiación de la Guía 34", t: "Las actividades propuestas favorecieron la comprensión y apropiación de los elementos de la Guía 34." },
+      { l: "Capacitación: participación y construcción colectiva", t: "Las estrategias metodológicas promovieron la participación, el intercambio de experiencias y la construcción colectiva de aprendizajes." }
+    ] },
+    { t: "Componente comunitario", d: "Valora cada afirmación según lo observado durante el microcentro.", items: [
+      { l: "Comunitario: institución, familias y comunidad", t: "Las actividades facilitaron la comprensión de la Guía 34 desde la relación entre la institución educativa, las familias y la comunidad." },
+      { l: "Comunitario: participación y contexto", t: "El abordaje temático permitió reconocer posibilidades para fortalecer la participación y el vínculo con el contexto." }
+    ] },
+    { t: "Desarrollo general del microcentro", d: "Valora cada afirmación según lo observado durante el microcentro.", items: [
+      { l: "General: organización y secuencia", t: "La organización y secuencia de las actividades favorecieron el desarrollo del microcentro." },
+      { l: "General: metodología y diálogo", t: "La metodología utilizada promovió la participación activa y el diálogo entre los padrinos." },
+      { l: "General: distribución del tiempo", t: "La distribución del tiempo fue adecuada para desarrollar las actividades propuestas." },
+      { l: "General: claridad y pertinencia de la Guía 34", t: "El abordaje de la Guía 34 fue claro, pertinente y relacionado con la práctica educativa." },
+      { l: "General: aprendizajes y aplicación", t: "El microcentro permitió construir aprendizajes y reconocer posibilidades de aplicación en el acompañamiento institucional." }
+    ] }
   ],
   OPEN: [
-    { t: "Lo más valioso", d: "¿Qué fue lo mejor del Microcentro? Lo que te llevas en la maleta.", ph: "Escribe lo que más te sirvió o te gustó…" },
-    { t: "Para el próximo", d: "¿Qué debemos mejorar o cambiar en el siguiente Microcentro?", ph: "Escribe tu propuesta de mejora…" }
-  ],
-  VERDICT: ["", "¡Espantoso!", "Podría mejorar", "Aceptable", "¡Muy bueno!", "¡Monstruosamente bueno!"]
+    { t: "Lo más valioso", d: "¿Qué fue lo más valioso del desarrollo del microcentro?", ph: "Escribe aquí tu respuesta…" },
+    { t: "Aspectos por mejorar", d: "¿Qué aspectos debemos mejorar en el desarrollo de las actividades o el abordaje temático?", ph: "Escribe aquí tu respuesta…" },
+    { t: "Para el próximo microcentro", d: "¿Qué sugerimos para el próximo microcentro?", ph: "Escribe aquí tu respuesta…" }
+  ]
 };
+CFG.SCALE = CFG.SECTIONS.flatMap((s) => s.items.map((i) => ({ ...i, s: s.t })));
 CFG.NAMES.sort((a, b) => a.localeCompare(b, "es"));
 
 const $ = (id) => document.getElementById(id);

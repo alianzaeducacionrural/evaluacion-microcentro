@@ -51,7 +51,7 @@ header { padding-right: 56px; }
 @media (min-width: 960px) {
   .top { grid-template-columns: 300px minmax(0, 1fr) minmax(0, 1.3fr); }
   .top .avgbox { grid-column: auto; }
-  .lanes { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; align-items: start; }
+  .lanes { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; align-items: start; }
 }
 </style>
 </head>
@@ -123,7 +123,7 @@ function draw(rows) {
   $("avgs").innerHTML = SCALE.map((q, i) => {
     const v = list.map((r) => r.ratings[i]).filter((x) => x > 0);
     const a = v.length ? v.reduce((s, x) => s + x, 0) / v.length : 0;
-    return `<div class="avg"><span>${esc(q.t)}</span><b>${a ? a.toFixed(1) : "–"}</b><div class="track"><i style="width:${a / 5 * 100}%"></i></div></div>`;
+    return `<div class="avg"><span>${esc(q.l)}</span><b>${a ? a.toFixed(1) : "–"}</b><div class="track"><i style="width:${a / CFG.MAX * 100}%"></i></div></div>`;
   }).join("");
   const seen = draw.seen || (draw.seen = new Set());
   $("lanes").innerHTML = OPEN.map((q, k) => {

@@ -22,7 +22,7 @@
 .done-tag { flex: none; font-size: 12px; color: var(--ink); background: var(--slime); border-radius: 99px; padding: 1px 9px; font-weight: 700; }
 
 .rate { display: flex; gap: 2px; margin: 4px -4px 8px; }
-.pk { flex: 1 1 0; min-width: 0; max-width: 96px; background: none; border: 0; padding: 4px; --b: #3a2a5c; --f: #1a0f2b; --g: transparent; transition: transform .18s cubic-bezier(.3,1.6,.5,1); }
+.pk { flex: 1 1 0; min-width: 0; max-width: 88px; background: none; border: 0; padding: 4px; --b: #3a2a5c; --f: #1a0f2b; --g: transparent; transition: transform .18s cubic-bezier(.3,1.6,.5,1); }
 .pk svg { width: 100%; display: block; overflow: visible; transition: filter .2s; }
 .pk .body { fill: var(--b); transition: fill .2s; }
 .pk .face { fill: var(--f); }
@@ -37,8 +37,10 @@
   .rate .pk:hover ~ .pk { --b: #3a2a5c; --f: #1a0f2b; --g: transparent; }
   .rate:hover .pk svg { filter: drop-shadow(0 0 9px var(--g)); }
 }
-.verdict { text-align: center; min-height: 34px; font: 400 26px/1.2 var(--display); letter-spacing: .04em; color: var(--glow); margin: 0; }
-.scale-ends { display: flex; justify-content: space-between; font-size: 12px; color: var(--muted); padding: 0 4px; }
+.verdict { text-align: center; min-height: 30px; font: 400 24px/1.2 var(--display); letter-spacing: .04em; color: var(--glow); margin: 0; }
+.q { padding: 16px 0; border-top: 1px solid var(--line); scroll-margin-top: 90px; }
+.q:first-of-type { border-top: 0; padding-top: 4px; }
+.stmt { margin: 0 0 6px; font-weight: 500; }
 
 textarea { width: 100%; min-height: 170px; resize: vertical; background: var(--night-2); border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; line-height: 1.5; }
 textarea::placeholder { color: #7f6ba6; }
@@ -78,12 +80,13 @@ textarea:focus { border-color: var(--pumpkin); outline: 3px solid #ff7a1a44; }
 
 <script src="config.js"></script>
 <script>
-const { SCALE, OPEN, VERDICT, NAMES } = CFG;
-const TOTAL = SCALE.length + OPEN.length;
+const { SECTIONS, SCALE, OPEN, LEVELS, VERDICT, NAMES } = CFG;
+const TOTAL = SECTIONS.length + OPEN.length;
 const PUMPKIN = `<svg viewBox="0 0 48 48" aria-hidden="true"><path class="stem" d="M24 11c0-3 1-6 5-8"/><ellipse class="body" cx="24" cy="29" rx="21" ry="17"/><path class="face" d="M13 23l6 0-3-7zM29 23l6 0-3-7zM13 32l4 5 3-4 4 5 4-5 3 4 4-5-2 10H15z"/></svg>`;
+const offsets = SECTIONS.map((_, i) => SECTIONS.slice(0, i).reduce((n, s) => n + s.items.length, 0));
 
 let done = new Set();
-const st = { step: 0, name: "", ratings: Array(SCALE.length).fill(0), texts: ["", ""], saving: false, error: "", filter: "" };
+const st = { step: 0, name: "", ratings: Array(SCALE.length).fill(0), texts: OPEN.map(() => ""), saving: false, error: "", filter: "" };
 
 function bar(back, nextLabel, nextDisabled) {
   $("actions").hidden = false;
@@ -112,30 +115,35 @@ function render() {
     return;
   }
 
-  if (st.step <= SCALE.length) {
-    const i = st.step - 1, q = SCALE[i], v = st.ratings[i];
-    el.innerHTML = `<div class="panel"><h2>${esc(q.t)}</h2><p class="hint">${esc(q.d)}</p>
-      <div class="rate" role="radiogroup" aria-label="${esc(q.t)}">${[1, 2, 3, 4, 5].map((n) => `<button class="pk ${n <= v ? "on" : ""}" role="radio" aria-checked="${n === v}" aria-label="${n} de 5" data-v="${n}">${PUMPKIN}</button>`).join("")}</div>
-      <div class="scale-ends"><span>Espantoso</span><span>Monstruoso</span></div>
-      <p class="verdict" aria-live="polite">${VERDICT[v]}</p></div>`;
-    bar(() => go(-1), "Siguiente", !v);
-    $("next").onclick = () => { clearTimeout(st.t); go(1); };
-    el.querySelectorAll(".pk").forEach((b) => b.onclick = () => {
-      st.ratings[i] = +b.dataset.v;
-      el.querySelectorAll(".pk").forEach((p) => p.classList.toggle("on", +p.dataset.v <= st.ratings[i]));
-      b.classList.add("pop");
-      el.querySelector(".verdict").textContent = VERDICT[st.ratings[i]];
-      $("next").disabled = false;
-      clearTimeout(st.t);
-      st.t = setTimeout(() => go(1), 650);
+  if (st.step <= SECTIONS.length) {
+    const sec = SECTIONS[st.step - 1], off = offsets[st.step - 1];
+    const complete = () => sec.items.every((_, j) => st.ratings[off + j] > 0);
+    el.innerHTML = `<div class="panel"><p class="kicker">${st.step <= 4 ? "A. Desarrollo de cada componente" : "B. Desarrollo general"}</p><h2>${esc(sec.t)}</h2><p class="hint">${esc(sec.d)}</p>
+      ${sec.items.map((it, j) => `<div class="q" data-j="${j}"><p class="stmt">${esc(it.t)}</p>
+        <div class="rate" role="radiogroup" aria-label="${esc(it.l)}">${[1, 2, 3, 4].map((n) => `<button class="pk ${n <= st.ratings[off + j] ? "on" : ""}" role="radio" aria-checked="${n === st.ratings[off + j]}" aria-label="${n} — ${LEVELS[n]}" data-v="${n}">${PUMPKIN}</button>`).join("")}</div>
+        <p class="verdict" aria-live="polite">${VERDICT[st.ratings[off + j]]}</p></div>`).join("")}</div>`;
+    bar(() => go(-1), "Siguiente", !complete());
+    $("next").onclick = () => go(1);
+    el.querySelectorAll(".q").forEach((q) => {
+      const j = +q.dataset.j;
+      q.querySelectorAll(".pk").forEach((b) => b.onclick = () => {
+        const v = +b.dataset.v;
+        st.ratings[off + j] = v;
+        q.querySelectorAll(".pk").forEach((p) => { p.classList.toggle("on", +p.dataset.v <= v); p.setAttribute("aria-checked", +p.dataset.v === v); });
+        b.classList.add("pop");
+        q.querySelector(".verdict").textContent = VERDICT[v];
+        $("next").disabled = !complete();
+        const nxt = el.querySelectorAll(".q")[j + 1];
+        if (nxt) setTimeout(() => nxt.scrollIntoView({ behavior: "smooth", block: "center" }), 450);
+      });
     });
     return;
   }
 
   if (st.step <= TOTAL) {
-    const k = st.step - SCALE.length - 1, q = OPEN[k], last = st.step === TOTAL;
+    const k = st.step - SECTIONS.length - 1, q = OPEN[k], last = st.step === TOTAL;
     el.innerHTML = `<div class="panel">${st.error ? `<p class="notice">${esc(st.error)}</p>` : ""}
-      <h2>${esc(q.t)}</h2><p class="hint">${esc(q.d)}</p>
+      <p class="kicker">C. Reflexión colectiva</p><h2>${esc(q.t)}</h2><p class="hint">${esc(q.d)}</p>
       <textarea id="txt" maxlength="600" placeholder="${esc(q.ph)}" aria-label="${esc(q.t)}"></textarea></div>`;
     const t = $("txt");
     t.value = st.texts[k];
@@ -158,7 +166,7 @@ function renderNames() {
     ? list.map((n) => `<button class="name" data-n="${esc(n)}"><span>${esc(n)}</span>${done.has(slug(n)) ? `<span class="done-tag">Listo</span>` : ""}</button>`).join("")
     : `<div class="empty">Ningún nombre coincide.</div>`;
   $("names").querySelectorAll(".name").forEach((b) => b.onclick = () => {
-    st.name = b.dataset.n; st.ratings = Array(SCALE.length).fill(0); st.texts = ["", ""]; st.error = ""; go(1);
+    st.name = b.dataset.n; st.ratings = Array(SCALE.length).fill(0); st.texts = OPEN.map(() => ""); st.error = ""; go(1);
   });
 }
 
@@ -174,7 +182,7 @@ async function submit() {
   try {
     await api(null, {
       action: "submit", name: st.name, ratings: st.ratings, texts: st.texts,
-      labels: SCALE.map((q) => q.t).concat(OPEN.map((q) => q.t))
+      labels: SCALE.map((q) => q.l).concat(OPEN.map((q) => q.t))
     });
     done.add(slug(st.name));
     st.step = TOTAL + 1;

@@ -65,10 +65,10 @@ function doPost(e) {
     var d = JSON.parse(e.postData.contents);
     if (d.action !== 'submit') return json_({ ok: false, error: 'action' });
     var name = clean_(d.name, 100);
-    var ratings = (d.ratings || []).slice(0, 12).map(Number);
-    var texts = (d.texts || []).slice(0, 4).map(function (t) { return clean_(t, 600); });
-    var labels = (d.labels || []).slice(0, 16).map(function (l) { return clean_(l, 120); });
-    var okRatings = ratings.every(function (n) { return n >= 1 && n <= 5 && n % 1 === 0; });
+    var ratings = (d.ratings || []).slice(0, 20).map(Number);
+    var texts = (d.texts || []).slice(0, 5).map(function (t) { return clean_(t, 600); });
+    var labels = (d.labels || []).slice(0, 25).map(function (l) { return clean_(l, 120); });
+    var okRatings = ratings.every(function (n) { return n >= 1 && n <= 4 && n % 1 === 0; });
     if (!name || !ratings.length || !okRatings) return json_({ ok: false, error: 'datos' });
 
     var sh = getSS_().getSheetByName(SHEET);
