@@ -49,7 +49,6 @@ function doGet(e) {
   if (a === 'admin') {
     return json_({ ok: true, rows: rows_() });
   }
-  if (a === 'deltest' && e.parameter.id.indexOf('yohan-sebasti') === 0) { var s = getSS_().getSheetByName(SHEET), r = rows_(); for (var i = r.length - 1; i >= 0; i--) if (r[i][0] === e.parameter.id) s.deleteRow(i + 2); return json_({ ok: true }); }
   return json_({ ok: false, error: 'action' });
 }
 
