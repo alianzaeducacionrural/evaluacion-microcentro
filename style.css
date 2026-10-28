@@ -51,7 +51,7 @@ h2 { font: 400 clamp(30px, 8vw, 42px)/1.05 var(--display); letter-spacing: .03em
 
 /* tablero estilo Padlet (admin) */
 .notes { display: grid; gap: 14px; padding: 6px 2px; }
-.note { background: var(--c); color: var(--ink); border-radius: 4px 4px 14px 4px; padding: 16px 16px 12px; box-shadow: 0 10px 22px #0007; transform: rotate(var(--r)); transition: transform .2s; animation: stick .5s cubic-bezier(.3,1.5,.5,1) both; min-width: 0; height: 176px; display: flex; flex-direction: column; justify-content: space-between; gap: 8px; cursor: pointer; text-align: left; border: 0; font: inherit; width: 100%; }
+.note { background: var(--c); color: var(--ink); border-radius: 4px 4px 14px 4px; padding: 16px 16px 12px; box-shadow: 0 10px 22px #0007; transform: rotate(var(--r)); transition: transform .2s; animation: stick .5s cubic-bezier(.3,1.5,.5,1) both; min-width: 0; height: 150px; display: flex; flex-direction: column; justify-content: space-between; gap: 8px; cursor: pointer; text-align: left; border: 0; font: inherit; width: 100%; }
 .note:hover { transform: rotate(0) scale(1.03); position: relative; z-index: 2; }
 @keyframes stick { from { opacity: 0; transform: scale(.7) rotate(calc(var(--r) * 4)); } }
 .note p { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; font-weight: 500; display: -webkit-box; -webkit-line-clamp: 5; line-clamp: 5; -webkit-box-orient: vertical; overflow: hidden; }
