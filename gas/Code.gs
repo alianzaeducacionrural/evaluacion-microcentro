@@ -1,5 +1,5 @@
 /**
- * API del formulario "Microcentro Embrujado".
+ * API del formulario "Microcentro del Terror".
  * Guarda una fila por Padrino en la hoja `Respuestas` (se crea sola en la carpeta de Drive).
  *
  * Primera vez: ejecutar `setup` desde el editor (autoriza permisos y crea la hoja).
