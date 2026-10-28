@@ -82,6 +82,7 @@ header { padding-right: 56px; }
     <div class="lanes" id="lanes"></div>
   </div>
 </div>
+<dialog class="note-modal" id="note-modal" aria-labelledby="nm-q"><p class="q" id="nm-q"></p><p class="txt" id="nm-t"></p><div class="by"><b id="nm-by"></b><button class="x" id="nm-x">Cerrar</button></div></dialog>
 <div class="overlay" id="overlay" hidden><h2>Microcentro del Terror</h2><div class="qr-img" id="qr-big"></div><p class="hint">Toca en cualquier parte para cerrar</p></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -99,7 +100,11 @@ function drawQR(target, size) {
 
 function hash(s) { let h = 0; for (const c of s) h = (h * 31 + c.charCodeAt(0)) >>> 0; return h; }
 
+let lastData = "", shown = [];
 function draw(rows) {
+  const sig = JSON.stringify(rows);
+  if (sig === lastData) return;
+  lastData = sig;
   const list = rows.map((r) => ({
     name: r[2], ts: r[1],
     ratings: r.slice(3, 3 + SCALE.length).map(Number),
@@ -117,11 +122,11 @@ function draw(rows) {
     const a = v.length ? v.reduce((s, x) => s + x, 0) / v.length : 0;
     return `<div class="avg"><span>${esc(q.l)}</span><b>${a ? a.toFixed(1) : "–"}</b><div class="track"><i style="width:${a / CFG.MAX * 100}%"></i></div></div>`;
   }).join("");
-  const seen = draw.seen || (draw.seen = new Set());
+  shown = OPEN.map((_, k) => list.filter((r) => r.texts[k]));
   $("lanes").innerHTML = OPEN.map((q, k) => {
-    const notes = list.filter((r) => r.texts[k]);
+    const notes = shown[k];
     return `<div class="lane"><h3>${esc(q.t)}</h3><p>${esc(q.d)}</p><div class="notes">${notes.length
-      ? notes.map((r, j) => `<article class="note n${(j + k) % 5}" style="--r:${((hash(r.name) % 5) - 2) * .8}deg"><p>${esc(r.texts[k])}</p><footer>${esc(r.name)}</footer></article>`).join("")
+      ? notes.map((r, j) => `<button class="note n${(j + k) % 5}" data-k="${k}" data-j="${j}" style="--r:${((hash(r.name) % 5) - 2) * .8}deg" aria-label="Abrir nota de ${esc(r.name)}"><p>${esc(r.texts[k])}</p><footer><span>${esc(r.name)}</span>${r.texts[k].length > 150 ? `<span class="more">Ver más</span>` : ""}</footer></button>`).join("")
       : `<div class="empty">Aún no hay notas.</div>`}</div></div>`;
   }).join("");
 }
@@ -138,6 +143,18 @@ async function load() {
 }
 
 $("refresh").onclick = load;
+$("lanes").onclick = (e) => {
+  const b = e.target.closest(".note");
+  if (!b) return;
+  const r = shown[+b.dataset.k][+b.dataset.j], m = $("note-modal");
+  m.style.setProperty("--c", getComputedStyle(b).getPropertyValue("--c"));
+  $("nm-q").textContent = OPEN[+b.dataset.k].t;
+  $("nm-t").textContent = r.texts[+b.dataset.k];
+  $("nm-by").textContent = r.name;
+  m.showModal();
+};
+$("nm-x").onclick = () => $("note-modal").close();
+$("note-modal").onclick = (e) => { if (e.target === e.currentTarget) e.currentTarget.close(); };
 $("qr-url").textContent = FORM_URL;
 drawQR($("qr"), 200);
 $("zoom").onclick = $("qr").onclick = () => { drawQR($("qr-big"), Math.max(200, Math.min(520, innerWidth - 90, innerHeight - 280))); $("overlay").hidden = false; };
