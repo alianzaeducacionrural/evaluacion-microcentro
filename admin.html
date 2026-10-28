@@ -159,7 +159,7 @@ $("lanes").onclick = (e) => {
 };
 $("nm-x").onclick = () => $("note-modal").close();
 $("note-modal").onclick = (e) => { if (e.target === e.currentTarget) e.currentTarget.close(); };
-$("qr-url").textContent = FORM_URL.replace(/^https?:///, "").replace(//$/, "");
+$("qr-url").textContent = FORM_URL.replace(/^https?:\/\//, "").replace(/\/$/, "");
 drawQR($("qr"), 200);
 $("zoom").onclick = $("qr").onclick = () => { drawQR($("qr-big"), Math.max(200, Math.min(520, innerWidth - 90, innerHeight - 280))); $("overlay").hidden = false; };
 $("overlay").onclick = () => { $("overlay").hidden = true; };
